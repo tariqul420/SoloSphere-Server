@@ -36,11 +36,32 @@ async function run() {
       res.send(result)
     })
 
+    //get a single job data
+    app.get('/jobs/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.findOne(query)
+      res.send(result)
+    })
+
     // get my posted jobs
     app.get('/my-posted-jobs/:email', async (req, res) => {
       const email = req.params.email
       const query = { 'buyer.email': email }
       const result = await jobsCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    //update job data by id
+    app.put('/update-job/:id', async (req, res) => {
+      const id = req.params.id
+      const jobData = req.body
+      const updated = {
+        $set: jobData
+      }
+      const query = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const result = await jobsCollection.updateOne(query, updated, options)
       res.send(result)
     })
 
