@@ -9,7 +9,11 @@ const port = process.env.PORT || 9000
 const app = express()
 
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [
+    'http://localhost:5173',
+    'https://solosphere-web.web.app',
+    'https://solosphere-web.firebaseapp.com'
+  ],
   credentials: true
 }))
 app.use(express.json())
@@ -53,7 +57,8 @@ async function run() {
         const token = jwt.sign(userInfo, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
         res.cookie('SoloSphere_Token', token, {
           httpOnly: true,
-          secure: false
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
         }).send({ success: true })
       } catch (error) {
         return res.status(500).send({ message: error.code })
@@ -64,7 +69,8 @@ async function run() {
     app.post('/logout', (req, res) => {
       res.clearCookie('SoloSphere_Token', {
         httpOnly: true,
-        secure: false
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
       }).send({ success: true })
     })
 
@@ -123,7 +129,7 @@ async function run() {
       res.send(result)
     })
 
-    await client.db('admin').command({ ping: 1 })
+    // await client.db('admin').command({ ping: 1 })
     console.log(
       '☘️  You successfully connected to MongoDB!'
     )
